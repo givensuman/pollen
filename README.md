@@ -8,7 +8,7 @@
 
 `pollen` creates a pretty straightforward, but opinionated, way of managing dotfiles for your system. It leverages the fact that most people keep their dotfiles in version control as top-level folders, e.g.:
 
-```
+```txt
 some-repo
   - config-one
     └ whole-buncha-configs
@@ -17,7 +17,7 @@ some-repo
 
 All it asks is that you place among this structure a `track.yaml` file which specifies what goes where, and provides some hooks on which to operate. Here's what mine looks like:
 
-```
+```yaml
 %YAML 1.2
 ---
 home: # This gets evaluated to $HOME
