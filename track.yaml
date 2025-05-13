@@ -2,9 +2,9 @@
 ---
 home:
   - .tool-versions # asdf
-  - .asdf:
-      - run_after: "~/.asdf/bin/asdf install"
-      - run_before: "echo 'installing languages!'"
+  # - .asdf:
+  #     - run_after: "~/.asdf/bin/asdf install"
+  #     - run_before: "echo 'installing languages!'"
 
 .config:
   - bat:
@@ -17,6 +17,5 @@ home:
   - ghostty
   - nvim:
       - run_before: "cp -r ~/.config/nvim ~/.config/nvim.bak"
-
-Pictures:
-  - Wallpapers
+# Pictures:
+#   - Wallpapers

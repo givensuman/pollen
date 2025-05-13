@@ -19,8 +19,9 @@ pub struct Hooks {
 #[derive(Debug, Clone, PartialEq)]
 pub struct Entry {
     pub name: String,
-    path: String,
-    hooks: Option<Hooks>,
+    pub path: String,
+    pub parent_path: String,
+    pub hooks: Option<Hooks>,
 }
 
 /// Takes the key-value pair from a mapping with one entry
@@ -62,13 +63,12 @@ fn recurse_to_entries(value: &Value, parent: &PathBuf, entries: &mut Vec<Entry>)
     match value {
         Value::String(value) => entries.push(Entry {
             name: value.as_str().to_string(),
-            path: get_home_dir().join(value).to_string_or_crash(),
+            parent_path: parent.to_string_or_crash(),
+            path: parent.join(value).to_string_or_crash(),
             hooks: None,
         }),
         Value::Mapping(value) => {
             let (key, value) = extract_key_value_from_single_mapping(value);
-            println!("KEY: {:#?}", key);
-            println!("VALUE: {:#?}", value);
 
             let mut hooks = Hooks {
                 run_before: None,
@@ -94,7 +94,8 @@ fn recurse_to_entries(value: &Value, parent: &PathBuf, entries: &mut Vec<Entry>)
 
                     entries.push(Entry {
                         name: key.to_string(),
-                        path: get_home_dir().join(key).to_string_or_crash(),
+                        parent_path: parent.to_string_or_crash(),
+                        path: parent.join(key).to_string_or_crash(),
                         hooks: Some(hooks),
                     })
                 }
@@ -112,7 +113,14 @@ fn recurse_to_entries(value: &Value, parent: &PathBuf, entries: &mut Vec<Entry>)
 
 fn recurse_over_mapping(mapping: &Mapping, entries: &mut Vec<Entry>) {
     mapping.iter().for_each(|(key, value)| {
-        let parent = get_home_dir().join(key.to_string_or_crash());
+        let parent = get_home_dir().join({
+            let mut key = key.to_string_or_crash();
+            if key == "home" || key == "~" {
+                key = String::from("");
+            }
+
+            key
+        });
 
         recurse_to_entries(value, &parent, entries)
     });
@@ -121,8 +129,6 @@ fn recurse_over_mapping(mapping: &Mapping, entries: &mut Vec<Entry>) {
 pub fn to_vec(mapping: &Mapping) -> Vec<Entry> {
     let mut entries: Vec<Entry> = Vec::new();
     recurse_over_mapping(mapping, &mut entries);
-
-    println!("{:#?}", entries);
 
     entries
 }
