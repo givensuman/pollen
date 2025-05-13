@@ -1,0 +1,22 @@
+%YAML 1.2
+---
+home:
+  - .tool-versions # asdf
+  - .asdf:
+      - run_after: "~/.asdf/bin/asdf install"
+      - run_before: "echo 'installing languages!'"
+
+.config:
+  - bat:
+      - run_after: "bat cache --build"
+  - eza
+  - cosmic
+  - lazygit
+  - fish:
+      - run_after: "source ~/.config/fish/config.fish && fisher update"
+  - ghostty
+  - nvim:
+      - run_before: "cp -r ~/.config/nvim ~/.config/nvim.bak"
+
+Pictures:
+  - Wallpapers
