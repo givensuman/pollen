@@ -1,4 +1,5 @@
 mod cmd;
+mod utils;
 mod yaml;
 
 use seahorse::App;
