@@ -1,7 +1,9 @@
+mod clean;
 mod gather;
 mod scatter;
 mod status;
 
+use clean::clean;
 use gather::gather;
 use scatter::scatter;
 use status::status;
@@ -24,4 +26,10 @@ pub fn gather_cmd() -> Command {
     Command::new("gather")
         .description("Gather command")
         .action(gather)
+}
+
+pub fn clean_cmd() -> Command {
+    Command::new("clean")
+        .description("Clean command")
+        .action(clean)
 }

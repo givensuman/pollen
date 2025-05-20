@@ -17,7 +17,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         .usage("cli [args]")
         .command(cmd::scatter_cmd())
         .command(cmd::gather_cmd())
-        .command(cmd::status_cmd());
+        .command(cmd::status_cmd())
+        .command(cmd::clean_cmd());
 
     app.run(args);
 

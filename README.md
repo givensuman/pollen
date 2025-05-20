@@ -10,9 +10,9 @@
 
 ```txt
 some-repo
-  - config-one
+  ― config-one
     └ whole-buncha-configs
-  - config-two
+  ― config-two
 ```
 
 All it asks is that you place among this structure a `track.yaml` file which specifies what goes where, and provides some hooks on which to operate. Here's what mine looks like:
@@ -44,11 +44,12 @@ Then you can update your repository with `pollen gather`, or update your system 
 
 #### 🌻 How
 
-| command | usage           | alias(es) | description                                      |
-| ------- | --------------- | --------- | ------------------------------------------------ |
-| scatter | scatter \<args> | s         | copies files from pollen's root to the system    |
-| gather  | gather \<args>  | g         | copies files from the system to pollen's root    |
-| status  | status \<args>  |           | diffs files between pollen's root and the system |
+| command  | usage           | alias(es) | description                                      |
+| -------- | --------------- | --------- | ------------------------------------------------ |
+| scatter  | scatter \<args> | s         | copies files from pollen's root to the system    |
+| gather   | gather \<args>  | g         | copies files from the system to pollen's root    |
+| status   | status \<args>  |           | diffs files between pollen's root and the system |
+| ⚠️ clean | clean           |           | remove all files from the system                 |
 
 > If no `<args>` are specified, every entry in your `track.yaml` will be processed. Otherwise, you can pass any number of entries by name
 
