@@ -6,23 +6,23 @@ use seahorse::Context;
 
 use std::fs;
 
-pub fn scatter(_c: &Context) {
+pub fn scatter(ctx: &Context) {
     let mut path = match utils::get_cwd() {
         Ok(path) => path,
         Err(error) => panic!("unable to determine current directory: {:?}", error),
     };
     path.push("track.yaml");
 
-    let path_str = match path.to_str() {
-        Some(path_str) => path_str,
-        None => panic!("unable to convert path {:?} to string", path),
-    };
+    let entries = yaml::get_entries(path.as_path());
 
-    let entries = yaml::get_entries(path_str);
+    if !ctx.args.is_empty() {
+        println!("{:?}", ctx.args);
+    }
+
     for entry in entries {
         if fs::read_dir(&entry.name).is_err() && fs::read(&entry.name).is_err() {
             eprintln!(
-                "{:?} is being tracked but not in current directory",
+                "{:?} is being scattered but not in current directory",
                 &entry.name
             );
         }

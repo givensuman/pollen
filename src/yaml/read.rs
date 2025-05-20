@@ -1,10 +1,11 @@
 use serde_yaml::Mapping;
 
+use std::path::Path;
 use std::{fs::File, io::Read};
 
 /// Read the provided YAML file and return a `serd_yaml::Mapping`
-pub fn to_mapping(filename: &str) -> Mapping {
-    let mut file = match File::open(filename) {
+pub fn to_mapping(path: &Path) -> Mapping {
+    let mut file = match File::open(path) {
         Ok(file) => file,
         Err(error) => {
             panic!("error opening file: {:#?}", error);

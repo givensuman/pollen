@@ -2,6 +2,7 @@ mod cmd;
 mod utils;
 mod yaml;
 
+extern crate diff;
 use seahorse::App;
 
 use std::env;
@@ -14,9 +15,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         .author(env!("CARGO_PKG_AUTHORS"))
         .version(env!("CARGO_PKG_VERSION"))
         .usage("cli [args]")
-        .action(|c| println!("Hello, {:?}!", c.args))
         .command(cmd::scatter_cmd())
-        .command(cmd::gather_cmd());
+        .command(cmd::gather_cmd())
+        .command(cmd::status_cmd());
 
     app.run(args);
 

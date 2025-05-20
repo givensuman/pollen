@@ -18,9 +18,9 @@ pub struct Hooks {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Entry {
+    parent_path: PathBuf,
     pub name: String,
-    pub path: String,
-    pub parent_path: String,
+    pub path: PathBuf,
     pub hooks: Option<Hooks>,
 }
 
@@ -59,14 +59,18 @@ impl ForciblyString for PathBuf {
     }
 }
 
-fn recurse_to_entries(value: &Value, parent: &PathBuf, entries: &mut Vec<Entry>) {
+fn recurse_to_entries<'a, 'b>(value: &Value, parent: &Path, entries: &mut Vec<Entry>) {
+    let path = PathBuf::new().join(parent);
+
     match value {
+        // Entry is a string, which corresponds to a file or directory
         Value::String(value) => entries.push(Entry {
-            name: value.as_str().to_string(),
-            parent_path: parent.to_string_or_crash(),
-            path: parent.join(value).to_string_or_crash(),
+            parent_path: path.clone(),
+            path: path.join(value),
+            name: value.to_string(),
             hooks: None,
         }),
+        // Entry is a mapping, which corresponds to a file or directory with additional options
         Value::Mapping(value) => {
             let (key, value) = extract_key_value_from_single_mapping(value);
 
@@ -75,6 +79,7 @@ fn recurse_to_entries(value: &Value, parent: &PathBuf, entries: &mut Vec<Entry>)
                 run_after: None,
             };
 
+            // This will have to be a sequence of options
             match value.as_sequence() {
                 Some(sequence) => {
                     let mapping = match sequence.iter().next() {
@@ -94,14 +99,16 @@ fn recurse_to_entries(value: &Value, parent: &PathBuf, entries: &mut Vec<Entry>)
 
                     entries.push(Entry {
                         name: key.to_string(),
-                        parent_path: parent.to_string_or_crash(),
-                        path: parent.join(key).to_string_or_crash(),
+                        parent_path: path.clone(),
+                        path: path.join(key),
                         hooks: Some(hooks),
                     })
                 }
                 None => panic!("value {:#?} is not a sequence", value),
             }
         }
+        // Entry is a sequence, which means is has multiple string or mapping sequences,
+        // so we need to recurse downwards
         Value::Sequence(value) => {
             for entry in value {
                 recurse_to_entries(entry, &Path::new(parent).to_path_buf(), entries);

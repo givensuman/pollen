@@ -9,7 +9,6 @@ home:
 .config:
   - bat:
       - run_after: "bat cache --build"
-  - eza
   - cosmic
   - lazygit
   - fish:

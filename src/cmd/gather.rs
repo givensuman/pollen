@@ -13,12 +13,7 @@ pub fn gather(_c: &Context) {
     };
     path.push("track.yaml");
 
-    let path_str = match path.to_str() {
-        Some(path_str) => path_str,
-        None => panic!("unable to convert path {:?} to string", path),
-    };
-
-    let entries = yaml::get_entries(path_str);
+    let entries = yaml::get_entries(path.as_path());
     for entry in entries {
         if fs::read_dir(&entry.name).is_err() && fs::read(&entry.name).is_err() {
             eprintln!(
