@@ -6,7 +6,10 @@ use std::path::{Path, PathBuf};
 fn get_home_dir() -> PathBuf {
     match home_dir() {
         Some(path) => path,
-        None => panic!("unable to determine home directory"),
+        None => match std::env::var("HOME") {
+            Ok(value) => PathBuf::from(value),
+            Err(_) => panic!("failed to get home directory"),
+        },
     }
 }
 
@@ -18,7 +21,6 @@ pub struct Hooks {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Entry {
-    parent_path: PathBuf,
     pub name: String,
     pub path: PathBuf,
     pub hooks: Option<Hooks>,
@@ -59,13 +61,12 @@ impl ForciblyString for PathBuf {
     }
 }
 
-fn recurse_to_entries<'a, 'b>(value: &Value, parent: &Path, entries: &mut Vec<Entry>) {
+fn recurse_to_entries(value: &Value, parent: &Path, entries: &mut Vec<Entry>) {
     let path = PathBuf::new().join(parent);
 
     match value {
         // Entry is a string, which corresponds to a file or directory
         Value::String(value) => entries.push(Entry {
-            parent_path: path.clone(),
             path: path.join(value),
             name: value.to_string(),
             hooks: None,
@@ -99,7 +100,6 @@ fn recurse_to_entries<'a, 'b>(value: &Value, parent: &Path, entries: &mut Vec<En
 
                     entries.push(Entry {
                         name: key.to_string(),
-                        parent_path: path.clone(),
                         path: path.join(key),
                         hooks: Some(hooks),
                     })
@@ -111,7 +111,7 @@ fn recurse_to_entries<'a, 'b>(value: &Value, parent: &Path, entries: &mut Vec<En
         // so we need to recurse downwards
         Value::Sequence(value) => {
             for entry in value {
-                recurse_to_entries(entry, &Path::new(parent).to_path_buf(), entries);
+                recurse_to_entries(entry, Path::new(parent), entries);
             }
         }
         _ => {}

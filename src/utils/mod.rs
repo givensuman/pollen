@@ -2,4 +2,4 @@ pub mod get_cwd;
 pub use get_cwd::get_cwd;
 
 pub mod get_diff;
-pub use get_diff::{DiffResult, get_diff, get_lines_from_dir};
+pub use get_diff::{DiffResult, get_diff};

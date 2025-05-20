@@ -45,12 +45,19 @@ impl DiffResult {
     pub fn minus(&self) -> String {
         format!("{}", self.minus)
     }
+
+    pub fn plus_value(&self) -> usize {
+        self.plus.value
+    }
+    // pub fn minus_value(&self) -> usize {
+    //     self.minus.value
+    // }
 }
 
 /// Get the diffs of two files or directories
 /// for usage in the `status` command
 ///
-/// Returns Option<String> in the form of "+x\t-y"
+/// Returns Option<DiffResult> in the form of "+x\t-y"
 pub fn get_diff(a: &Path, b: &Path) -> Option<DiffResult> {
     // Determine if a and b are files or directories
     let is_file = match a.is_file() && b.is_file() {

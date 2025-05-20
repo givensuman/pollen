@@ -41,28 +41,36 @@ pub fn status(_c: &Context) {
 
     let longest_plus = diffs
         .iter()
-        .map(|entry| entry.diff.plus().len())
+        .map(|entry| entry.diff.plus_value().to_string().len())
         .max()
         .unwrap_or(0);
 
     match diffs.len() {
         0 => println!("Everything is up to date."),
-        _ => diffs.iter().for_each(|entry| {
+        _ => {
             println!(
-                "{} {} {}",
-                entry.name.clone()
-                    + String::from(" ")
-                        .repeat(longest_name - entry.name.len())
-                        .as_str(),
-                format_args!(
-                    "{}{}",
-                    entry.diff.plus(),
-                    String::from(" ")
-                        .repeat(longest_plus - entry.diff.plus().len())
-                        .as_str()
-                ),
-                entry.diff.minus(),
+                "{}{} 🌻",
+                format_args!("🐝{}", String::from(" ").repeat(longest_name - 1).as_str()),
+                format_args!("🍯{}", String::from(" ").repeat(longest_plus - 1).as_str()),
             );
-        }),
+
+            diffs.iter().for_each(|entry| {
+                println!(
+                    "{} {} {}",
+                    entry.name.clone()
+                        + String::from(" ")
+                            .repeat(longest_name - entry.name.len())
+                            .as_str(),
+                    format_args!(
+                        "{}{}",
+                        entry.diff.plus(),
+                        String::from(" ")
+                            .repeat(longest_plus - entry.diff.plus_value().to_string().len())
+                            .as_str()
+                    ),
+                    entry.diff.minus(),
+                );
+            })
+        }
     }
 }
