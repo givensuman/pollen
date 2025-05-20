@@ -32,10 +32,14 @@ pub struct Entry {
 fn extract_key_value_from_single_mapping(mapping: &Mapping) -> (&Value, &Value) {
     match mapping.iter().next() {
         Some(value) => value,
-        None => panic!(
-            "failed to extract key-value pair from mapping: {:#?}",
-            mapping
-        ),
+        None => {
+            eprintln!(
+                "failed to extract key-value pair from mapping: {:?}",
+                mapping
+            );
+            eprintln!("your track.yaml file is likely malformed...");
+            std::process::exit(1);
+        }
     }
 }
 
@@ -71,7 +75,8 @@ fn recurse_to_entries(value: &Value, parent: &Path, entries: &mut Vec<Entry>) {
             name: value.to_string(),
             hooks: None,
         }),
-        // Entry is a mapping, which corresponds to a file or directory with additional options
+        // Entry is a mapping, which corresponds to a
+        // file or directory with additional options
         Value::Mapping(value) => {
             let (key, value) = extract_key_value_from_single_mapping(value);
 
@@ -107,8 +112,8 @@ fn recurse_to_entries(value: &Value, parent: &Path, entries: &mut Vec<Entry>) {
                 None => panic!("value {:#?} is not a sequence", value),
             }
         }
-        // Entry is a sequence, which means is has multiple string or mapping sequences,
-        // so we need to recurse downwards
+        // Entry is a sequence, which means is has multiple string
+        // or mapping sequences, so we need to recurse downwards
         Value::Sequence(value) => {
             for entry in value {
                 recurse_to_entries(entry, Path::new(parent), entries);
@@ -118,11 +123,13 @@ fn recurse_to_entries(value: &Value, parent: &Path, entries: &mut Vec<Entry>) {
     }
 }
 
+const ACCEPTABLE_HOME_ALIASES: [&str; 2] = ["home", "~"];
+
 fn recurse_over_mapping(mapping: &Mapping, entries: &mut Vec<Entry>) {
     mapping.iter().for_each(|(key, value)| {
         let parent = get_home_dir().join({
             let mut key = key.to_string_or_crash();
-            if key == "home" || key == "~" {
+            if ACCEPTABLE_HOME_ALIASES.contains(&key.to_lowercase().as_str()) {
                 key = String::from("");
             }
 
