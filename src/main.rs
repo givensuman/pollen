@@ -9,6 +9,7 @@ use std::env;
 use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
+    println!("{}", env::var("HOME").unwrap());
     let args: Vec<String> = env::args().collect();
     let app = App::new(env!("CARGO_PKG_NAME"))
         .description(env!("CARGO_PKG_DESCRIPTION"))

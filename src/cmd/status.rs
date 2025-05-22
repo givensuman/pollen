@@ -16,12 +16,7 @@ pub fn status(_c: &Context) {
     let mut diffs: Vec<DiffEntry> = Vec::new();
 
     for entry in entries {
-        let local_path = match utils::get_cwd() {
-            Ok(path) => path.join(&entry.name),
-            Err(error) => {
-                panic!("can't find local path... {}", error);
-            }
-        };
+        let local_path = utils::Cwd::get().join(&entry.name);
 
         let diff = utils::get_diff(local_path.as_path(), &entry.path);
         if let Some(value) = diff {

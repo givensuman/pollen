@@ -1,7 +1,7 @@
 mod parse;
 mod read;
 
-use crate::utils;
+use crate::utils::cwd;
 use parse::Entry;
 
 use std::path::Path;
@@ -12,11 +12,7 @@ pub fn get_entries(path: &Path) -> Vec<Entry> {
 }
 
 pub fn get_entries_from_cwd() -> Vec<Entry> {
-    let mut path = match utils::get_cwd() {
-        Ok(path) => path,
-        Err(error) => panic!("unable to determine current directory: {:?}", error),
-    };
-    path.push("track.yaml");
+    let mut path = cwd::Cwd::get();
 
     get_entries(path.as_path())
 }

@@ -7,11 +7,7 @@ use seahorse::Context;
 use std::fs;
 
 pub fn gather(ctx: &Context) {
-    let mut path = match utils::get_cwd() {
-        Ok(path) => path,
-        Err(error) => panic!("unable to determine current directory: {:?}", error),
-    };
-    path.push("track.yaml");
+    let path = utils::Cwd::get().join("track.yaml");
 
     let mut entries = yaml::get_entries(path.as_path());
 
