@@ -12,18 +12,18 @@ enum DiffType {
 }
 
 #[derive(Debug, Clone)]
-struct Diff {
+struct DiffEntry {
     value: usize,
     diff_type: DiffType,
 }
 
-impl ops::AddAssign<usize> for Diff {
+impl ops::AddAssign<usize> for DiffEntry {
     fn add_assign(&mut self, rhs: usize) {
         self.value += rhs;
     }
 }
 
-impl fmt::Display for Diff {
+impl fmt::Display for DiffEntry {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.diff_type {
             DiffType::Plus => write!(f, "{}", format!("+{}", self.value).green()),
@@ -34,8 +34,8 @@ impl fmt::Display for Diff {
 
 #[derive(Debug, Clone)]
 pub struct DiffResult {
-    plus: Diff,
-    minus: Diff,
+    plus: DiffEntry,
+    minus: DiffEntry,
 }
 
 impl DiffResult {
@@ -58,7 +58,7 @@ impl DiffResult {
 /// for usage in the `status` command
 ///
 /// Returns Option<DiffResult> in the form of "+x\t-y"
-pub fn get_diff(a: &Path, b: &Path) -> Option<DiffResult> {
+pub fn diff(a: &Path, b: &Path) -> Option<DiffResult> {
     // Determine if a and b are files or directories
     let is_file = match a.is_file() && b.is_file() {
         true => true,
@@ -79,18 +79,18 @@ pub fn get_diff(a: &Path, b: &Path) -> Option<DiffResult> {
     let diff_result = if is_file {
         contents.0 = get_lines_from_file(a);
         contents.1 = get_lines_from_file(b);
-        diff(contents.0.as_str(), contents.1.as_str())
+        TextDiff::from_lines(contents.0.as_str(), contents.1.as_str())
     } else {
         contents.0 = get_lines_from_dir(a);
         contents.1 = get_lines_from_dir(b);
-        diff(contents.0.as_str(), contents.1.as_str())
+        TextDiff::from_lines(contents.0.as_str(), contents.1.as_str())
     };
 
-    let mut plus = Diff {
+    let mut plus = DiffEntry {
         value: 0,
         diff_type: DiffType::Plus,
     };
-    let mut minus = Diff {
+    let mut minus = DiffEntry {
         value: 0,
         diff_type: DiffType::Minus,
     };
@@ -103,11 +103,6 @@ pub fn get_diff(a: &Path, b: &Path) -> Option<DiffResult> {
     }
 
     Some(DiffResult { plus, minus })
-}
-
-/// Wrapper around similar::TextDiff crate
-fn diff<'a, 'b, 'c>(old: &'a str, new: &'b str) -> TextDiff<'a, 'b, 'c, str> {
-    TextDiff::from_lines(old, new)
 }
 
 fn get_lines_from_file(file: &Path) -> String {

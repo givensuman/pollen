@@ -18,7 +18,7 @@ pub fn status(_c: &Context) {
     for entry in entries {
         let local_path = utils::Cwd::get().join(&entry.name);
 
-        let diff = utils::get_diff(local_path.as_path(), &entry.path);
+        let diff = utils::diff(local_path.as_path(), &entry.path);
         if let Some(value) = diff {
             diffs.push(DiffEntry {
                 name: entry.name,

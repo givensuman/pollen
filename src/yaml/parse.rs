@@ -17,6 +17,7 @@ fn get_home_dir() -> PathBuf {
 pub struct Hooks {
     run_before: Option<String>,
     run_after: Option<String>,
+    depends_on: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -83,6 +84,7 @@ fn recurse_to_entries(value: &Value, parent: &Path, entries: &mut Vec<Entry>) {
             let mut hooks = Hooks {
                 run_before: None,
                 run_after: None,
+                depends_on: None,
             };
 
             // This will have to be a sequence of options
