@@ -1,10 +1,8 @@
 %YAML 1.2
 ---
 home:
-  - .tool-versions # asdf
-  # - .asdf:
-  #     - run_after: "~/.asdf/bin/asdf install"
-  #     - run_before: "echo 'installing languages!'"
+  - .tool-versions: # asdf
+      - alias_as: "tool-versions"
 
 .config:
   - bat:
@@ -16,5 +14,3 @@ home:
   - ghostty
   - nvim:
       - run_before: "cp -r ~/.config/nvim ~/.config/nvim.bak"
-# Pictures:
-#   - Wallpapers

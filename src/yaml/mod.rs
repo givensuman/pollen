@@ -14,6 +14,6 @@ pub fn get_entries(path: &Path) -> Vec<Entry> {
 
 /// Get the entries of a `track.yaml` from the CWD
 pub fn get_entries_from_cwd() -> Vec<Entry> {
-    let path = cwd::Cwd::get();
+    let path = cwd::Cwd::get().join("track.yaml");
     get_entries(path.as_path())
 }

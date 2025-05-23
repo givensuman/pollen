@@ -10,10 +10,9 @@ use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = env::args().collect();
-    let app = App::new(env!("CARGO_PKG_NAME"))
-        .description(env!("CARGO_PKG_DESCRIPTION"))
-        .author(env!("CARGO_PKG_AUTHORS"))
-        .version(env!("CARGO_PKG_VERSION"))
+    let app = App::new("pollen")
+        .description("🐝 a friendly dotfiles manager")
+        .author("github.com/givensuman")
         .usage("cli [args]")
         .command(cmd::scatter_cmd())
         .command(cmd::gather_cmd())

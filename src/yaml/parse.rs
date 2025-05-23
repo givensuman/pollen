@@ -18,6 +18,7 @@ pub struct Hooks {
     run_before: Option<String>,
     run_after: Option<String>,
     depends_on: Option<String>,
+    alias_as: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -85,6 +86,7 @@ fn recurse_to_entries(value: &Value, parent: &Path, entries: &mut Vec<Entry>) {
                 run_before: None,
                 run_after: None,
                 depends_on: None,
+                alias_as: None,
             };
 
             // This will have to be a sequence of options

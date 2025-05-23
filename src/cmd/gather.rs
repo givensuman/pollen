@@ -1,4 +1,3 @@
-use crate::utils;
 use crate::yaml;
 
 use fs_extra::copy_items;
@@ -7,9 +6,7 @@ use seahorse::Context;
 use std::fs;
 
 pub fn gather(ctx: &Context) {
-    let path = utils::Cwd::get().join("track.yaml");
-
-    let mut entries = yaml::get_entries(path.as_path());
+    let mut entries = yaml::get_entries_from_cwd();
 
     if !ctx.args.is_empty() {
         entries = entries

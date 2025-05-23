@@ -18,7 +18,7 @@ pub fn echo(ctx: &Context) {
 
     for entry in entries {
         match &entry.path.to_str() {
-            Some(path) => println!("{} {}", &entry.name, path),
+            Some(path) => println!("{}", path),
             None => continue,
         }
     }
