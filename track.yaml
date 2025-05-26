@@ -3,6 +3,7 @@
 home:
   - .tool-versions: # asdf
       - alias_as: "tool-versions"
+  - test
 
 .config:
   - bat:

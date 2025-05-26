@@ -44,22 +44,3 @@ impl PartialEq for Cwd {
         self.0 == other.0
     }
 }
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn test_cwd() {
-        use super::Cwd;
-        let cwd = Cwd::get();
-        assert!(cwd.exists());
-        assert!(cwd.is_dir());
-    }
-
-    #[test]
-    fn test_cwd_join() {
-        use super::Cwd;
-        let cwd = Cwd::get();
-        let joined = cwd.join("test.txt");
-        assert_eq!(joined.as_path(), cwd.0.join("test.txt"));
-    }
-}

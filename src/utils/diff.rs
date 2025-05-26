@@ -56,8 +56,6 @@ impl DiffResult {
 
 /// Get the diffs of two files or directories
 /// for usage in the `status` command
-///
-/// Returns Option<DiffResult> in the form of "+x\t-y"
 pub fn diff(a: &Path, b: &Path) -> Option<DiffResult> {
     // Determine if a and b are files or directories
     let is_file = match a.is_file() && b.is_file() {
@@ -105,6 +103,7 @@ pub fn diff(a: &Path, b: &Path) -> Option<DiffResult> {
     Some(DiffResult { plus, minus })
 }
 
+/// Given a path to a file, convert its contents into a string
 fn get_lines_from_file(file: &Path) -> String {
     match fs::read_to_string(file) {
         Ok(s) => s,
@@ -115,7 +114,9 @@ fn get_lines_from_file(file: &Path) -> String {
     }
 }
 
-pub fn get_lines_from_dir(dir: &Path) -> String {
+/// Given a path to a directory, recursively read all files
+/// and join their contents into a string
+fn get_lines_from_dir(dir: &Path) -> String {
     let mut lines = Vec::new();
 
     let dir_str = match dir.to_str() {

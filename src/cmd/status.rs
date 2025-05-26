@@ -42,30 +42,22 @@ pub fn status(_c: &Context) {
 
     match diffs.len() {
         0 => println!("Everything is up to date."),
-        _ => {
+        _ => diffs.iter().for_each(|entry| {
             println!(
-                "{}{} 🌻",
-                format_args!("🐝{}", String::from(" ").repeat(longest_name - 1).as_str()),
-                format_args!("🍯{}", String::from(" ").repeat(longest_plus - 1).as_str()),
+                "{} {} {}",
+                entry.name.clone()
+                    + String::from(" ")
+                        .repeat(longest_name - entry.name.len())
+                        .as_str(),
+                format_args!(
+                    "{}{}",
+                    entry.diff.plus(),
+                    String::from(" ")
+                        .repeat(longest_plus - entry.diff.plus_value().to_string().len())
+                        .as_str()
+                ),
+                entry.diff.minus(),
             );
-
-            diffs.iter().for_each(|entry| {
-                println!(
-                    "{} {} {}",
-                    entry.name.clone()
-                        + String::from(" ")
-                            .repeat(longest_name - entry.name.len())
-                            .as_str(),
-                    format_args!(
-                        "{}{}",
-                        entry.diff.plus(),
-                        String::from(" ")
-                            .repeat(longest_plus - entry.diff.plus_value().to_string().len())
-                            .as_str()
-                    ),
-                    entry.diff.minus(),
-                );
-            })
-        }
+        }),
     }
 }

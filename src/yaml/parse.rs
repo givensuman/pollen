@@ -105,6 +105,14 @@ fn recurse_to_entries(value: &Value, parent: &Path, entries: &mut Vec<Entry>) {
                         .get("run_after")
                         .map(|value| value.to_string_or_crash());
 
+                    hooks.depends_on = mapping
+                        .get("depends_on")
+                        .map(|value| value.to_string_or_crash());
+
+                    hooks.alias_as = mapping
+                        .get("alias_as")
+                        .map(|value| value.to_string_or_crash());
+
                     let key = key.to_string_or_crash();
 
                     entries.push(Entry {
