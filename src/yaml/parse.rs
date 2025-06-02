@@ -1,138 +1,102 @@
+//! Parse a YAML file into usable data entries
+use crate::utils;
+
 use dirs::home_dir;
-use serde_yaml::{Mapping, Value};
+use serde_yaml::{Mapping, Sequence, Value};
 
 use std::path::{Path, PathBuf};
 
-fn get_home_dir() -> PathBuf {
-    match home_dir() {
-        Some(path) => path,
-        None => match std::env::var("HOME") {
-            Ok(value) => PathBuf::from(value),
-            Err(_) => panic!("failed to get home directory"),
-        },
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Default)]
-pub struct Hooks {
-    run_before: Option<String>,
-    run_after: Option<String>,
-    depends_on: Option<String>,
-    alias_as: Option<String>,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct Entry {
-    pub name: String,
-    pub path: PathBuf,
-    pub hooks: Option<Hooks>,
-}
-
-/// Takes the key-value pair from a mapping with one entry
-/// e.g. "run_before": "blah blah blah"
-/// returns ("run_before", "blah blah blah")
-fn extract_key_value_from_single_mapping(mapping: &Mapping) -> (&Value, &Value) {
-    match mapping.iter().next() {
-        Some(value) => value,
-        None => {
-            eprintln!(
-                "failed to extract key-value pair from mapping: {:?}",
-                mapping
-            );
-            eprintln!("your track.yaml file is likely malformed...");
-            std::process::exit(1);
-        }
-    }
-}
-
-pub trait ForciblyString {
-    fn to_string_or_crash(&self) -> String;
-}
-
-impl ForciblyString for Value {
-    fn to_string_or_crash(&self) -> String {
-        match self.as_str() {
-            Some(s) => s.to_string(),
-            None => panic!("error converting value {:#?} to string", self),
-        }
-    }
-}
-
-impl ForciblyString for PathBuf {
-    fn to_string_or_crash(&self) -> String {
-        match self.to_str() {
-            Some(s) => s.to_string(),
-            None => panic!("error converting path {:#?} to string", self),
-        }
-    }
-}
-
 fn recurse_to_entries(value: &Value, parent: &Path, entries: &mut Vec<Entry>) {
-    let path = PathBuf::new().join(parent);
-
     match value {
         // Entry is a string, which corresponds to a file or directory
-        Value::String(value) => entries.push(Entry {
-            path: path.join(value),
-            name: value.to_string(),
-            hooks: None,
-        }),
-        // Entry is a mapping, which corresponds to a
-        // file or directory with additional options
-        Value::Mapping(value) => {
-            let (key, value) = extract_key_value_from_single_mapping(value);
-
-            let mut hooks = Hooks {
-                run_before: None,
-                run_after: None,
-                depends_on: None,
-                alias_as: None,
-            };
-
-            // This will have to be a sequence of options
-            match value.as_sequence() {
-                Some(sequence) => {
-                    let mapping = match sequence.iter().next() {
-                        Some(mapping) => mapping.as_mapping().expect("mapping"),
-                        None => panic!("value {:#?} is not a mapping", value),
-                    };
-
-                    hooks.run_before = mapping
-                        .get("run_before")
-                        .map(|value| value.to_string_or_crash());
-
-                    hooks.run_after = mapping
-                        .get("run_after")
-                        .map(|value| value.to_string_or_crash());
-
-                    hooks.depends_on = mapping
-                        .get("depends_on")
-                        .map(|value| value.to_string_or_crash());
-
-                    hooks.alias_as = mapping
-                        .get("alias_as")
-                        .map(|value| value.to_string_or_crash());
-
-                    let key = key.to_string_or_crash();
-
-                    entries.push(Entry {
-                        name: key.to_string(),
-                        path: path.join(key),
-                        hooks: Some(hooks),
-                    })
-                }
-                None => panic!("value {:#?} is not a sequence", value),
-            }
-        }
-        // Entry is a sequence, which means is has multiple string
-        // or mapping sequences, so we need to recurse downwards
-        Value::Sequence(value) => {
-            for entry in value {
-                recurse_to_entries(entry, Path::new(parent), entries);
-            }
-        }
+        Value::String(value) => handle_string(value, parent, entries),
+        // Entry is a mapping, which is either an endpoint with options
+        // or a point to recurse furhter down
+        Value::Mapping(value) => handle_mapping(value, parent, entries),
+        // Entry is a sequence, which means it has multiple `String` or `Mapping`
+        // sequences, so we need to recurse downwards
+        Value::Sequence(value) => handle_sequence(value, parent, entries),
         _ => {}
+    };
+}
+
+fn handle_string(value: &String, parent: &Path, entries: &mut Vec<Entry>) {
+    entries.push(Entry {
+        path: parent.join(value),
+        name: value.to_owned(),
+        hooks: Hooks::new(),
+        depends_on: None,
+    })
+}
+
+fn extract_mapping_key(value: &Mapping) -> String {
+    if value.keys().len() > 1 {
+        utils::error("malformed yaml");
     }
+
+    let key = value.keys().next().expect("malformed yaml");
+    key.as_str().expect("malformed yaml").to_string()
+}
+
+const ACCEPTABLE_OPTIONS: [&str; 3] = ["run_before", "run_after", "depends_on"];
+
+fn handle_mapping(value: &Mapping, parent: &Path, entries: &mut Vec<Entry>) {
+    let key = extract_mapping_key(value);
+    let mut entry = Entry {
+        name: key.clone(),
+        path: parent.join(&key),
+        hooks: Hooks::new(),
+        depends_on: None,
+    };
+
+    if !value.values().enumerate().all(|(index, value)| {
+        if !value.is_sequence() {
+            return false;
+        }
+
+        let is_acceptable = value.as_sequence().unwrap().iter().all(|value| {
+            if !value.is_mapping() {
+                return false;
+            }
+
+            ACCEPTABLE_OPTIONS.contains(&extract_mapping_key(value.as_mapping().unwrap()).as_str())
+        });
+
+        if !is_acceptable && index != 0 {
+            utils::warning("cannot add options to an entry unless its an endpoint");
+        }
+
+        is_acceptable
+    }) {
+        println!("value {:#?} did not pass muster", value);
+        handle_sequence(
+            &value.values().cloned().collect::<Vec<Value>>(),
+            &parent.join(key),
+            entries,
+        )
+    }
+    // All options are valid, this is an endpoint
+    else {
+        let value = value.values().next().expect("malformed yaml");
+
+        entry.hooks.run_before = value
+            .get("run_before")
+            .and_then(|v| v.as_str().map(String::from));
+        entry.hooks.run_after = value
+            .get("run_after")
+            .and_then(|v| v.as_str().map(String::from));
+        entry.depends_on = value
+            .get("depends_on")
+            .and_then(|v| v.as_str().map(String::from));
+
+        entries.push(entry);
+    }
+}
+
+fn handle_sequence(value: &[Value], parent: &Path, entries: &mut Vec<Entry>) {
+    value
+        .iter()
+        .for_each(|value| recurse_to_entries(value, parent, entries));
 }
 
 const ACCEPTABLE_HOME_ALIASES: [&str; 2] = ["home", "~"];
@@ -156,5 +120,63 @@ pub fn to_vec(mapping: &Mapping) -> Vec<Entry> {
     let mut entries: Vec<Entry> = Vec::new();
     recurse_over_mapping(mapping, &mut entries);
 
+    println!("{:?}", entries);
+
     entries
+}
+
+fn get_home_dir() -> PathBuf {
+    match home_dir() {
+        Some(path) => path,
+        None => match std::env::var("HOME") {
+            Ok(value) => PathBuf::from(value),
+            Err(_) => panic!("failed to get home directory"),
+        },
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct Hooks {
+    run_before: Option<String>,
+    run_after: Option<String>,
+}
+
+impl Hooks {
+    fn new() -> Hooks {
+        Hooks {
+            run_before: None,
+            run_after: None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Entry {
+    pub name: String,
+    pub path: PathBuf,
+    pub hooks: Hooks,
+    pub depends_on: Option<String>,
+}
+
+pub trait ForciblyString {
+    /// Force a type into a `String` or `panic!`
+    fn to_string_or_crash(&self) -> String;
+}
+
+impl ForciblyString for Value {
+    fn to_string_or_crash(&self) -> String {
+        match self.as_str() {
+            Some(s) => s.to_string(),
+            None => panic!("error converting value {:#?} to string", self),
+        }
+    }
+}
+
+impl ForciblyString for PathBuf {
+    fn to_string_or_crash(&self) -> String {
+        match self.to_str() {
+            Some(s) => s.to_string(),
+            None => panic!("error converting path {:#?} to string", self),
+        }
+    }
 }

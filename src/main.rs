@@ -27,7 +27,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .command(cmd::scatter_cmd())
         .command(cmd::gather_cmd())
         .command(cmd::status_cmd())
-        .command(cmd::clean_cmd())
+        // .command(cmd::clean_cmd())
         .command(cmd::echo_cmd());
 
     app.run(args);

@@ -2,8 +2,7 @@
 ---
 home:
   - .tool-versions: # asdf
-      - alias_as: "tool-versions"
-  - test
+      # - alias_as: "tool-versions"
 
 .config:
   - bat:
@@ -15,3 +14,4 @@ home:
   - ghostty
   - nvim:
       - run_before: "cp -r ~/.config/nvim ~/.config/nvim.bak"
+      - depends_on: "fish"

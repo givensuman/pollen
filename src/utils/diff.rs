@@ -1,3 +1,5 @@
+use crate::utils;
+
 use std::path::Path;
 use std::{fmt, fs, ops};
 
@@ -57,15 +59,30 @@ impl DiffResult {
 /// Get the diffs of two files or directories
 /// for usage in the `status` command
 pub fn diff(a: &Path, b: &Path) -> Option<DiffResult> {
-    // Determine if a and b are files or directories
+    // Handle error cases - paths don't exist
+    if !a.exists() {
+        utils::print::warning(format!("{} doesn't exist", a.display()));
+    }
+    if !b.exists() {
+        utils::print::warning(format!("{} doesn't exist", b.display()));
+    }
+
+    if !a.exists() || !b.exists() {
+        return None;
+    }
+
+    // Handle error cases - mismatching file types
     let is_file = match a.is_file() && b.is_file() {
         true => true,
         false => {
             if a.is_dir() && b.is_dir() {
                 false
             } else {
-                eprintln!("tried to diff {:#?} against {:#?},", a, b);
-                eprintln!("but one is a directory and one is a file");
+                if a.is_dir() {
+                    eprintln!("{} is a directory, {} is a file", a.display(), b.display());
+                } else {
+                    eprintln!("{} is a file, {} is a directory", a.display(), b.display());
+                }
 
                 return None;
             }

@@ -3,6 +3,7 @@ use crate::yaml;
 
 use seahorse::Context;
 
+/// Prints the paths of entries defined in `track.yaml`
 pub fn echo(ctx: &Context) {
     let path = utils::Cwd::get().join("track.yaml");
 
