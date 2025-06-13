@@ -73,26 +73,6 @@ qualified/path/from/home:
       - depends_on: "baz"
 ```
 
-**Flexible Field Formats:**
-
-The `depends_on`, `run_before`, and `run_after` fields support both single strings and sequences:
-
-```yaml
-# Single values
-depends_on: "some-dependency"
-run_before: "echo 'single command'"
-run_after: "systemctl reload service"
-
-# Multiple values
-depends_on: ["dep1", "dep2", "dep3"]
-run_before:
-  - "echo 'first command'"
-  - "mkdir -p ~/.backup"
-run_after:
-  - "source ~/.config"
-  - "echo 'done'"
-```
-
 ### Directory Structure
 
 Pollen organizes files in a clean directory structure:
@@ -151,14 +131,12 @@ Pollen automatically handles dependencies between configuration files:
 
 ".zshrc":
   - alias_as: "zsh.config"
-  - depends_on: "shell-environment" # Single dependency
+  - depends_on: "shell-environment"
 
 ".config":
   - "zsh/plugins": # ~/.config/zsh/plugins
       - alias_as: "zsh.plugins"
-      - depends_on: # Multiple dependencies
-          - "zsh.config"
-          - "shell-environment"
+      - depends_on: "zsh.config"
       - run_after: "source ~/.zshrc"
 ```
 
@@ -170,17 +148,8 @@ Execute commands before or after putting them on your system:
 entries:
   - name: "nginx-config"
     path: "/etc/nginx/nginx.conf"
-    run_before: "sudo nginx -t" # Single command
+    run_before: "sudo nginx -t"
     run_after: "sudo systemctl reload nginx"
-
-  - name: "complex-setup"
-    path: "~/.myconfig"
-    run_before: # Multiple commands
-      - "echo 'Starting setup'"
-      - "mkdir -p ~/.backup"
-    run_after:
-      - "source ~/.myconfig"
-      - "echo 'Setup complete'"
 ```
 
 ### Selective Operations
