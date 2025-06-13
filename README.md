@@ -1,6 +1,6 @@
 ![logo](/assets/pollen.png)
 
-🐝 a friendly dotfile manager
+### 🐝 a friendly dotfile manager
 
 Pollen is a modern, Rust-based configuration file manager that helps you organize, backup, and synchronize your dotfiles across systems. It provides intelligent dependency tracking, Git integration, and a clean CLI interface for managing your configuration files.
 
@@ -64,7 +64,7 @@ Your `track.yaml` file defines which configuration files Pollen manages:
 qualified/path/from/home:
   - subpaths/are/fine:
     - turtles/all/the/way:
-        - down
+        - down:
             - alias_as: "baz"
   - config_folder:
       - alias_as: "something else"
@@ -78,13 +78,14 @@ qualified/path/from/home:
 Pollen organizes files in a clean directory structure:
 
 ```
-~/.config/pollen/          # Main configuration directory
+~/.config/pollen/         # Main configuration directory
 ├── pollen.yaml           # Pollen settings
 ├── track.yaml            # Your dotfile definitions
 ├── files/                # Managed configuration files
-│   ├── zshrc
-│   ├── vimrc
-│   └── tmux.conf
+│   ├── .zshrc
+│   ├── .vimrc
+│   └── .tmux/
+|     └── tmux.conf
 ├── cache/                # Backup files and temporary data
 └── operations.json       # Operation history for undo
 ```
@@ -145,9 +146,7 @@ Pollen automatically handles dependencies between configuration files:
 Execute commands before or after putting them on your system:
 
 ```yaml
-entries:
-  - name: "nginx-config"
-    path: "/etc/nginx/nginx.conf"
+nginx-config:
     run_before: "sudo nginx -t"
     run_after: "sudo systemctl reload nginx"
 ```
