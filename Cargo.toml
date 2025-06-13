@@ -1,0 +1,20 @@
+[package]
+name = "pollen"
+version = "0.1.0"
+edition = "2021"
+description = "\U0001f41d a friendly dotfile manager"
+authors = ["github.com/givensuman"]
+
+[[bin]]
+name = "pollen"
+path = "src/main.rs"
+
+[lib]
+name = "pollen"
+path = "src/lib.rs"
+
+[dependencies]
+serde = { version = "1.0.219", features = ["derive"] }
+serde_yaml = "0.9.34"
+serde_json = "1.0"
+seahorse = "2.2.0"
