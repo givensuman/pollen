@@ -8,7 +8,19 @@ pub fn gather_files(c: &Context) -> Result<(), PollenError> {
     let target_entries: Vec<String> = c.args.clone();
     
     let parser = ConfigParser::new()?;
-    let entries = parser.parse_file(config_file.as_deref().unwrap_or("config.toml"))?;
+    let dirs = PollenDirs::new()?;
+    let config = dirs.load_config()?;
+    
+    let (config_path, _used_config_file) = match config_file.as_deref() {
+        Some(path) => (path.to_string(), path.to_string()),
+        None => {
+            let track_file = dirs.get_track_file_path(&config);
+            let path_str = track_file.to_str().ok_or(PollenError::InvalidEndpoint("Invalid config file path".into()))?;
+            (path_str.to_string(), track_file.display().to_string())
+        }
+    };
+
+    let entries = parser.parse_file(&config_path)?;
     
     // Filter entries based on command line arguments
     let entries_to_gather: Vec<_> = if target_entries.is_empty() {
